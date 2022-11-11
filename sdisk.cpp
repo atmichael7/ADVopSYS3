@@ -6,7 +6,7 @@ Sdisk::Sdisk(string diskname, int numberofblocks, int blocksize){
   this->blocksize = blocksize;
 
   ifstream infile;
-  infile.open(diskname);
+  infile.open(diskname.c_str());
 
   if (infile.fail()){
     infile.close();
@@ -20,7 +20,7 @@ Sdisk::Sdisk(string diskname, int numberofblocks, int blocksize){
 
   else{
     char c;
-    int counter;
+    int counter = 0;
     infile.get(c);
     while (infile.good()){
       counter++;
@@ -62,6 +62,7 @@ int Sdisk::putblock(int blocknumber, string buffer){
   for (int i = 0; i < blocksize; i++){
     iofile.put(buffer.at(i));
   }
+  iofile.close();
   return 1;
 }
 

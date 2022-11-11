@@ -4,14 +4,17 @@
 
 int main()
 {
+  cout << "A \n";
   Sdisk disk1("disk1",256,128);
+  cout << "A1 \n";
   Filesys fsys("disk1",256,128);
+  cout << "B \n";
   fsys.newfile("file1");
   fsys.newfile("file2");
-
+  cout << "C \n";
   string bfile1;
   string bfile2;
-
+  cout << "D \n";
   for (int i=1; i<=1024; i++)
      {
        bfile1+="1";

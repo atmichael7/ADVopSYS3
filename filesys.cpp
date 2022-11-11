@@ -1,10 +1,10 @@
 #include "filesys.h"
-//#include "sdisk.h"
-#include "sdisk.h"
-
+// newfile
 
 Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskname, numberofblocks, blocksize){
   // need to set the root size then set the fat size
+  rootsize = getblocksize() / 12;
+  fatsize = getnumberofblocks() * 5 / getblocksize() + 1;
 
   // check if there is a file system on the disk already
   string buffer;
@@ -13,27 +13,37 @@ Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskn
     buildfs();
     fssynch();
   }
-  else{ // disk has been formatted already so read it in
+  else  // disk has been formatted already so read it in
     readfs();
-  }
 }
 
-// might need to change the string block input to buffer since thats what he did in the notes
+//##############################################################################
+
 int Filesys::addblock(string file, string buffer){
   int allocate = fat[0];
   if (allocate <= 0){
-    cout << "No space on disk!";
+    cout << "No space on disk!\n";
     return 0;
   }
 
   int blockid = getfirstblock(file);
+
+  if (blockid == -1){
+    cout << "File does not exist!\n";
+    return 0;
+  }
+
   if (blockid == 0){
     // update the root
     for (int i = 0; i < filename.size(); i++){
-      firstblock[i] = allocate;
-      break;
+      if (filename[i] == file){
+        firstblock[i] = allocate;
+        fssynch();  // IS THIS RIGHT? possibly not since followed by return -1
+        break;
+      }
     }
   }
+
   else{
     // update fat... find the end of file
     while (fat[blockid] != 0){
@@ -41,14 +51,13 @@ int Filesys::addblock(string file, string buffer){
     }
     // fat[blockid] = 0;
     fat[blockid] = allocate;
+    fat[0] = fat[fat[0]];
+    fat[allocate] = 0;
+    putblock(allocate, buffer);
+    fssynch();
+    return allocate;
   }
-  fat[0] = fat[fat[0]];
-  fat[allocate] = 0;
-  fssynch();
-
-  putblock(allocate, buffer);
-
-  return allocate;
+  return -1;
 }
 
 //##############################################################################
@@ -57,6 +66,7 @@ int Filesys::delblock(string file, int blocknumber){
   bool flag = fbcheck(file, blocknumber);
   if (!flag)
     return 0;
+
   int b = getfirstblock(file);
   if (b == blocknumber){
     for (int i = 0; i <= filename.size(); i++){
@@ -71,11 +81,10 @@ int Filesys::delblock(string file, int blocknumber){
       b = fat[b];
     }
     fat[b] = fat[blocknumber];
-    fat[blocknumber] = fat[0];
-    fat[0] = blocknumber;
-    return 1;
   }
-  return 0; // JUST ADDED
+  fat[blocknumber] = fat[0];
+  fat[0] = blocknumber;
+  return 1; // JUST ADDED
 }
 
 //##############################################################################
@@ -112,7 +121,8 @@ int Filesys::writeblock(string file, int blocknumber, string buffer){
 
 bool Filesys::fbcheck(string file, int blocknumber){
   int b = getfirstblock(file);
-  if (b == -1)
+
+  if (b < 0)
     return false;
 
   while (b != 0){
@@ -151,7 +161,7 @@ int Filesys::newfile(string file){
   // do this in order to confirm whether or not there is an open entry 
   // because XXXXXX denotes empty space for file to be put in its place
   for (int i = 0; i < filename.size(); i++){ // loop thru each entry in filename vector to find first XXXXXX (open entry)
-    if (filename[i] == "xxxxxx"){
+    if (filename[i] == "XXXXXX"){
       // know we have an entry to put the file at
       filename[i] = file; // set the open entry equal to the inputted file name (from XXXXXX to file)
       firstblock[i] = 0;  //set firstblock (parallel vector of filename) equal to 0 [why zero: a zero in the block is an empty block]
@@ -252,12 +262,6 @@ int Filesys::readfs(){
 // PRIVATE FUNCTIONS FROM THE HEADER FILE
 //##############################################################################
 
-int rootsize;           // maximum number of entries in ROOT
-int fatsize;            // number of blocks occupied by FAT
-vector<string> filename;   // filenames in ROOT
-vector<int> firstblock; // firstblocks in ROOT
-vector<int> fat;             // FAT
-
 // builds the file system
 int Filesys::buildfs(){
   for (int i = 0; i < rootsize; i++){
@@ -278,7 +282,7 @@ int Filesys::buildfs(){
   }
 
   // so the tailend isnt pointing to something that doesnt exist in the space
-  fat[fat.size()-1] = 0;
+  fat.at(fatsize-1) = 0;
 
   return 1; // success
 }
@@ -290,7 +294,12 @@ int Filesys::fssynch(){
   // synch file system
   // call this whenever modifying any part of the FAT or the root
   ostringstream outstream1, outstream2;
+
   for (int i = 0; i < firstblock.size(); i++){
+    outstream1 << filename[i] << " " << firstblock[i] << " ";
+  }
+
+  for (int i = 0; i < fat.size(); i++){
     outstream2 << fat[i] << " "; // writing to FAT
   }
 
@@ -303,7 +312,7 @@ int Filesys::fssynch(){
   putblock(1, blocks1[0]); // putting root into the index 1
 
   for (int i = 0; i < blocks2.size(); i++){
-    putblock(fatsize=2+i, blocks2[i]);
+    putblock(fatsize + 2 + i, blocks2[i]);
   }
   return 1;
 }

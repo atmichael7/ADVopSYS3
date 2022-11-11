@@ -17,14 +17,11 @@ class Sdisk{
     int getnumberofblocks(); // accessor function
     int getblocksize(); // accessor function
 
-
   private:
     string diskname;        // file name of software-disk
     int numberofblocks;     // number of blocks on disk
     int blocksize;          // block size in bytes
 };
-
-
 
 vector<string> block(string buffer, int b);
 

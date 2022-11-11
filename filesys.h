@@ -24,9 +24,7 @@ class Filesys:public Sdisk
     int readblock(string file, int blocknumber, string& buffer);
     int writeblock(string file, int blocknumber, string buffer);
     int nextblock(string file, int blocknumber);
-
     bool fbcheck(string file, int blocknumber);
-
 
   private:
     int rootsize;           // maximum number of entries in ROOT
@@ -38,6 +36,5 @@ class Filesys:public Sdisk
     int readfs(); // reads the file system
     int fssynch(); // writes the FAT and ROOT to the sdisk
 };
-
 
 #endif 
