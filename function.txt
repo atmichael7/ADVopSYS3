@@ -1,0 +1,50 @@
+
+
+int Filesys::fsclose() *REVIEWED*
+    Goal: Close the file system 
+        1) Output "Error: fsclose called!"
+        [Explanation: There shouldn't be any call to close the filesystem in this course
+        so if the function is called then there is clearly something wrong and I should be
+        fired]
+        2) return 1 (success?)
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::newfile(string file) *REVIEWED*
+    Goal: Create new empty file if it does not exist already 
+    Returns:
+       -1 if file already exists
+        0 if no room for a new file 
+        1 if successful
+
+    Steps:
+        1) Check if the file already exists, by checking each entry in filename vector
+        and seeing if it is equal to the input file. IF it finds a match in the loop
+        then return -1 (file already exists)
+        - Exit loop; 
+        2) Check if the filename vector has XXXXXX in any entry to determine if there
+        is any space to put a new filename in the filename vector. IF loop found XXXXXX
+        set the current inex of the filename[i] that the loop is at equal to the inputted
+        file. THEN, in the firstblock[i] vector (parallel to filename vector)'s index equal
+        to 0. 
+        [Explanation: Setting the parallel index of firstblock[i] to zero will enable other
+        functions such as addblock to find the next available free block in the firstblock 
+        vector since the firstblock[0] is equal to the next free block that isn't associated
+        with a file; this allows it to immediately find the first free block that can be
+        associated with a file.]
+        2a) Synch the filesys with fssynch(), and output success
+        2b) return 1 (success)
+        - Exit loop;
+        3) Output "No space for new file"
+        3a) return 0 (no space)
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+    Filesys::fbcheck(string file, int blocknumber)
+        Goal: Check if the first block is equal to something or not, and return boolean value
+        such that the calling functions will know what to do with the information.
+
+        Steps:
+            1) Initialize b equal to getfirstblock(file) so we can check what it equals
+            2) IF b <= 0 RETURN false (file is empty)
+            3

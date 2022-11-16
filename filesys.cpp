@@ -3,13 +3,18 @@
 
 Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskname, numberofblocks, blocksize){
   // need to set the root size then set the fat size
+  // where root is responsible for holding file info 
+  // where fat holds the information of the files
+  // rootsize = 128 / 12 = 10.6 -> 10
   rootsize = getblocksize() / 12;
+  // fatsize = 256 * 5 / 128 + 1 = 11
   fatsize = getnumberofblocks() * 5 / getblocksize() + 1;
 
   // check if there is a file system on the disk already
   string buffer;
   getblock(1, buffer);
   if (buffer[0] == '#'){ // means the disk is not formatted
+    cout << "Disk not formatted.\n";
     buildfs();
     fssynch();
   }
@@ -20,15 +25,15 @@ Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskn
 //##############################################################################
 
 int Filesys::addblock(string file, string buffer){
-  int allocate = fat[0];
-  if (allocate <= 0){
+  int allocate = fat[0];  // fat 0 contains the first free space in the fat (linked list) ============================================= fact check
+  if (allocate <= 0){   // if the first index of fat is 0 or lower, then there is no space on fat (no space at all)
     cout << "No space on disk!\n";
     return 0;
   }
 
-  int blockid = getfirstblock(file);
+  int blockid = getfirstblock(file);  // blockid is set to the first block of the desired file to add the block to 
 
-  if (blockid == -1){
+  if (blockid == -1){ // if the block id == -1 then it doesn't have 
     cout << "File does not exist!\n";
     return 0;
   }
@@ -117,13 +122,16 @@ int Filesys::writeblock(string file, int blocknumber, string buffer){
   return 0;
 }
 
-//##############################################################################    14 14
+//##############################################################################   
 
 bool Filesys::fbcheck(string file, int blocknumber){
+  // get the first block of the file in order to check data
   int b = getfirstblock(file);
 
-  if (b < 0)
+  // if the first block of desired file is less than 0 then the check fails
+  if (b <= 0) // JUST ADDED SHOULD THIS BE <= OR ==
     return false;
+
 
   while (b != 0){
     if (b == blocknumber){
@@ -138,6 +146,7 @@ bool Filesys::fbcheck(string file, int blocknumber){
 
 int Filesys::fsclose(){
   // do nothing
+  cout << "\n ERROR: fsclose called! \n";
   return 1;
 }
 
@@ -153,6 +162,7 @@ int Filesys::newfile(string file){
   // do this by checking each entry in the filename vector and seeing if == to input file 
   for (int i = 0; i < filename.size(); i++){
     if (filename[i] == file){
+      cout << "File already exists.\n";
       return -1; // if true, return -1 for FILE ALREADY EXISTS
     }
   }
@@ -166,11 +176,12 @@ int Filesys::newfile(string file){
       filename[i] = file; // set the open entry equal to the inputted file name (from XXXXXX to file)
       firstblock[i] = 0;  //set firstblock (parallel vector of filename) equal to 0 [why zero: a zero in the block is an empty block]
       fssynch(); // need to save the root directory after changes
+      cout << "Created new file: " << file << ".\n";
       return 1; // SUCCESS
     }
-    return 0; // otherwise there is no space so return 0
   }
-  return 0; // JUST ADDED
+  cout << "No space for new file.\n";
+  return 0; // otherwise there is no space so return 0
 }
 
 //##############################################################################
@@ -189,6 +200,7 @@ int Filesys::rmfile(string file){
           // which means that the file is empty and has no blocks associated with it except its first block in the parallel vector 
           filename[i] = "XXXXXX"; // thus can set the filename to XXXXXX since we don't need to worry about any blocks
           fssynch();  // synch the changes with the root 
+          cout << "File removed.\n";
           return 1; // return 1 for success
         }
         // firstblock is not zero thus not empty
@@ -196,8 +208,10 @@ int Filesys::rmfile(string file){
         return 0;
       }
       // file does not exist
+      cout << "File does not exist.\n";
       return -1;
     }
+    cout << "Error (rmfile)\n";
     return 0; // JUST ADDED
 }
 
@@ -255,6 +269,7 @@ int Filesys::readfs(){
     instream2 >> k;
     fat.push_back(k);
   }
+  cout << "File system read in.\n";
   return 1;
 }
 
@@ -284,6 +299,7 @@ int Filesys::buildfs(){
   // so the tailend isnt pointing to something that doesnt exist in the space
   fat.at(fatsize-1) = 0;
 
+  cout << "File system built.\n";
   return 1; // success
 }
 
@@ -314,5 +330,6 @@ int Filesys::fssynch(){
   for (int i = 0; i < blocks2.size(); i++){
     putblock(fatsize + 2 + i, blocks2[i]);
   }
+  cout << "File system synchronized.\n";
   return 1;
 }
