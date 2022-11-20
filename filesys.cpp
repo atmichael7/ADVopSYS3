@@ -14,7 +14,7 @@ Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskn
   string buffer;
   getblock(1, buffer);
   if (buffer[0] == '#'){ // means the disk is not formatted
-    cout << "Disk not formatted.\n";
+    cout << "Disk formatted, but no file system exists.\n";
     buildfs();
     fssynch();
   }
@@ -325,7 +325,7 @@ int Filesys::fssynch(){
   vector <string> blocks1 = block(buffer1, getblocksize());
   vector <string> blocks2 = block(buffer2, getblocksize());
 
-  putblock(1, blocks1[0]); // putting root into the index 1
+  putblock(0, blocks1[0]); // putting root into the index 1
 
   for (int i = 0; i < blocks2.size(); i++){
     putblock(fatsize + 2 + i, blocks2[i]);
