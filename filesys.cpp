@@ -285,9 +285,9 @@ int Filesys::buildfs(){
   } // after the loop the root has been built
 
   // populate the index 0 through fatsize+2 of the FAT
-  fat.push_back(2+fatsize);
-  fat.push_back(-1);
-  for (int i = 0; i < fatsize; i++){
+  fat.push_back(2+fatsize); // will be the first free block 
+  fat.push_back(-1); 
+  for (int i = 0; i < fatsize; i++){ // changed from i=0 to i=1 (FAT FIX)
     fat.push_back(-1);
   }
 
@@ -297,7 +297,7 @@ int Filesys::buildfs(){
   }
 
   // so the tailend isnt pointing to something that doesnt exist in the space
-  fat.at(fatsize-1) = 0;
+  fat.at(fatsize+1) = 0; // CHANGED FROM -1 TO +1 (FAT FIX)
 
   cout << "File system built.\n";
   return 1; // success
@@ -328,7 +328,7 @@ int Filesys::fssynch(){
   putblock(0, blocks1[0]); // putting root into the index 1
 
   for (int i = 0; i < blocks2.size(); i++){
-    putblock(fatsize + 2 + i, blocks2[i]);
+    putblock(fatsize + 1 + i, blocks2[i]); // changed to + 1 instead of 2 (FAT FIX)
   }
   cout << "File system synchronized.\n";
   return 1;
