@@ -10,6 +10,7 @@ int main()
   cout << "A1 - ";
   Filesys fsys("disk1",256,128);
   cout << "B - ";
+  /*
   fsys.newfile("file1");
   cout << "C1 - ";
   fsys.newfile("file2");
@@ -60,5 +61,7 @@ int main()
   fsys.delblock("file2",blocknumber);
 
   cout << "G3 - ";
+
+  */
 
 }
