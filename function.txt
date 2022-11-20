@@ -1,7 +1,292 @@
 
+Document produced by Michael B
+§
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  START TO SDISK CLASS FUNCTIONS  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+Sdisk::Sdisk(string diskname, int numberofblocks, int blocksize) [CLASS CONSTRUCTOR] *QUESTION*
+    Goal: To initialize a virtual disk, and to check if the named disk exists already in the current 
+        directory. If the file DNE then format a new one the size of (numberofblocks*blocksize) long 
+        filled with '#'s. If the file does exist, read it in and determine if the existing file is
+        formatted correctly or not.
+
+    Steps: 
+    1) Use pointers to associate the attributes diskname,numberofblocks, and blocksize to be 
+        to be stuck to the current Sdisk being initialized.
+    2) Initialize ifstream infile to read in disk 
+    2a) Open the file diskname.c_str() to read in the disk
+    2b) IF it fails (File DNE), close infile and initialize ofstream outdisk to begin formatting a
+        new disk. 
+        2c) For loop up to the numberofblocks * blocksize, for each loop iteration put a 
+            '#' in the outdisk
+        2d) Output "File DNE, created new file (NAME)"
+    3) ELSE initialize char c and counter, the infile.get(c) to pull first char from inputfile
+    3a) WHILE infile.good() grab the next character and counter++ to track how long loop went 
+    4) Out of loop, IF counter == (numberofblocks*block) output "Format: OK"
+    5) ELSE output "Format: FAIL" 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Sdisk::getblock(int blocknumber, string& buffer) [CLASS METHOD] *REVIEWED* 
+    Goal: Go to desired block and pull all the characters from the begining of its block up to blocksize 
+        in order to get the full block that is desired but no other block.
+
+    Steps:
+    1) initialize fstream iofile for input/output of file 
+    1a) iofile.open(diskname, ios::in | ios::out) to preserve file and prep for input and output if needed
+    1b) iofile.seekg(blocknumber*blocksize) seekg to goto the character in the file at position 
+        (desiredblocknumber x how big each block is) in order to reach the correct desired block 
+    1c) buffer.clear() just in case there was junk in there to be safe
+    2) FOR LOOP (i=0; i<blocksize) iofile.get(c) to get the first character in the desired block
+        buffer.push_back(c) to then put that character in the buffer, repeat until the set size of blocks
+    3) return 1;
+        Explanation: We do not return buffer because; seen above in the input arguements the buffer is a 
+        memory address thus whatever is requesting the getblock() function will be looking at the buffer 
+        after the function returns 1;
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Sdisk::putblock(int blocknumber, string buffer) [CLASS METHOD] *REVIEWED*
+    Goal: To put the inputted buffer into the desired block from the caller 
+
+    1) Initialize fstream iofile to input/output 
+    1a) iofile.open(diskname, ios::in | ios::out) to preserve and prep for i/o functions 
+    2) IF blocknumber < 0 || blocknumber >= numberofblocks output "Block out of range!" & return 0;
+        Explanation: Blocknumber start from 0, thus numberofblocks max is (numberofblocks-1) so if 
+            the desired blocknumber is == numberofblocks then it is out of range; also cannot be smaller 
+            than 0.
+    2-1) Check the buffer size against blocksize and output necessary warnings if inconsistent
+    3) iofile.seekp(blocksize*blocknumber) to set the put head at the desired location where the
+        blocknumber is the desired block from calling function and blocksize enables us to go to the right 
+        block.
+    3a) Now that put head in position, FOR LOOP (i=0; i<blocksize) do iofile.put(buffer.at(i))
+        the buffer should be == blocksize, so this should put the contents of the buffer into the desired
+        block (blocknumber) arguement from caller
+    4) iofile.close() to close it 
+    5) return 1; 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Sdisk::getnumberofblocks()  [CLASS ACCESSOR] *REVIEWED*
+    Goal: To return information of the number of blocks to the caller 
+
+    1) return numberofblocks (Accessor for private data)
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Sdisk::getblocksize()   [CLASS ACCESSOR] *REVIEWED*
+    Goal: To return information about the block size to the caller 
+
+    1) return blocksize (Accessor for private data)
+        Explanation: Block size is in bytes 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  END OF SDISK CLASS FUNCTIONS  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  START TO BLOCK CLASS FUNCTIONS  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+vector <string> block(string buffer, int b)
+    Goal: To block the buffer into a list of blocks of size b, and if the buffer is larger than the 
+            blocksize then to create an extra block to fit the extra information and fill in the 
+            ramaining gaps with '#'
+
+    1) Initialize a vector of type string called blocks 
+    1a) Initialize numberofblocks = 0
+    2) IF the length of inputted buffer divided by inputted b %'s out to zero then set
+        numberofblocks = buffer.length() / b
+        Explanation: This sets the numberofblocks equal to the whole value so that it can 
+        be blocked properly
+    2a) ELSE numberofblocks = buffer.length() / b+1, to add an extra block onto it since 
+        it would overflow if another block wasn't added.
+        Explanation: Say b = blocksize = 5 | buffer = 4
+                    Blocking it will do 1111#
+                     Say b = 5 | buffer = 5
+                    Blocking: 11111
+                     Say b = 5 | buffer = 6
+                    Blocking: 11111 1#### (Space added between blocks for easier visualization)
+    3) Initialize string tempblock
+    4) FOR LOOP (i=0; i<numberofblocks) tempblock = buffer.substr(b*i , b) where the b*i gets the position
+        and the position is obtained by blocksize=b, and the second parameter is the size of the substr()
+        that will be gathered, which is b=blocklength long. In essence it is gathering substrings from the 
+        inputted buffer in 1 blocksize at a time, and getting however many blocks are contained within the 
+        inputted buffer (note that number of blocks was set in step 2 or 2a)
+    4a) Still in loop - after getting the substr() do blocks.push_back(tempblock) so that the blocks 
+         vector will store the appropriate amount of information in blocksize
+        END LOOP 
+    5) Initialize integer lastblock = blocks.size()-1 to get the end of the blocks vector position in order 
+        to fill in the remaining open parts of the block with '#'
+    6) FOR LOOP (i=blocks[lastblock].length(); i<b) sets the position in the blocks vector to 
+        the set position in step 5.
+    6a) In loop: blocks[lastblock] += '#' will fill the remaining open positions of the last block to '#'
+         END LOOP
+    7) return blocks
+        Explanation: Returns the blocks vector to caller so that they can do whatever they please with the 
+        blocked information, perhaps push the blocks to a disk 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  END OF BLOCK CLASS FUNCTIONS  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+###########################################################################################################
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  START TO FILESYS CLASS FUNCTIONS  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ 
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+§§§§§§ Changed getblock(1, buffer); to getblock(0, buffer); §§§§§§
+
+    File System: Dynamic file management system 
+    ROOT: Root directory (Where it holds the filenames and their respective first blocks)
+    FAT: File Allocation Table (Where it holds the information of the blocks in linked list fashion)
+
+Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskname, numberofblocks, blocksize) [CLASS CONSTRUCTOR] *REVIEWED*
+    Goal: To read from the sdisk and either open the existing file ssystem on the disk or create a new
+        one for an empty disk. Begin by reading from block 1 to determine if an existing file system
+        is on the disk. 
+
+    Steps:
+    1) Initialize the rootsize = getblocksize() / 12 
+    Explanation: Root will be able to hold 10 filenames and their respective first blocks
+    1a) Initialize the fatsize = getnumberofblocks() * 5 / getblocksize() + 1
+    2) Check if there is a file system on the disk
+    2a) Initialize string buffer, then call getblock(1, buffer) to begin check
+    Explanation: This getblock call will check the firstblock of the disk and it will return the 
+        contents of the disk in the second arguement (buffer)
+    2b) IF (buffer[0] == '#') then the disk is formatted but does not have a file system on it
+        so call buildfs() and then fssynch() to build and synch it.
+    2c) ELSE call readfs() to read in and begin working with the file system
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::addblock(string file, string buffer) [CLASS METHOD] *REVIEWED*
+
+    Goal: To add a block of information to a desired file, if there is enough space to add a new block 
+
+    Steps:
+    1) Initialize integer allocate = fat[0] which contains the next free block
+    1a) IF allocate <= 0 then the first index of fat isn't pointing towards any free blocks 
+        meaning the disk is full, so output "No space on disk!" and return 0
+    2) Initialize blockid = getfirstblock(file) so that we can use this information of the first block 
+        of input file
+    2a) IF blockid == -1 then the file DNE (FACE CHECK!)
+    3) ELSE IF blockid == 0 need to update the root since the file is empty 
+        3a) FOR LOOP (i=0; i<fliename.size()) to go through each entry in the filename vector for the filesys
+        3b) IF current filename[i] == file THEN set the firstblock of the input file equal to allocate so that
+            the file will now have a block associated with it. Lastly fssynch() to record change in ROOT
+    4) ELSE the input file already has blocks associated with it and needs to find the last block associated 
+        with the file in order to add on to the linked list of that file
+        4a) WHILE LOOP (fat[blockid] != 0) set the blockid = fat[blockid] makes the loops go through each 
+            linked blocknumber associated with the file until it reaches the end of file == 0
+        4b) OUTSIDE LOOP - Now that the loop has put the position on the end of file (0) of the file 
+            we can update the current block to be occupied by the file, thus fat[blockid] = allocate
+            where allocate is set to the next free block
+        4c) Now need to set the next open entry in the FAT so do fat[0] = fat[fat[0]]
+        4d) Lastly set the block that the file is now associated with as the end of that file by setting it
+            equal to 0 by fat[allocate] = 0
+        4e) Now call the putblock(allocate, buffer) to put the desired information into the newly
+            aquired block for the file [where buffer is an input arguement for addblock, and allocate is the 
+            the blocknumber that the file has aquired]
+        4f) Call fssynch() to synch 
+        4g) return allocate the newly allocated blocknumber to the caller of this function as confirmation
+    5) If the function got this far without returning then there is something very wrong
+        Output "ERROR 25" and return -1
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::delblock(string file, int blocknumber) [CLASS METHOD] *QUESTION ON 2d*
+    Goal: To delete a block within a file 
+
+    Steps:
+    1) Initialize a boolean flag = fbcheck(file, blocknumber) this will determine whether or not 
+        the block we want to delete is inside the file in the first place 
+    1a) IF fbcheck returns false (!flag) return 0 meaning desired block isn't even in the file 
+    2) Initialize integer b = getfirstblock(file) to begin working with 
+    2a) IF b == blocknumber, the firstblock of the file equals the blocknumber desired to be deleted 
+        means that the first block of the file is the one desired to be deleted 
+        2b) FOR LOOP (i=0; i<= filename.size()) to go through each filename in the filename vector 
+            2c) IF current filename[i] == file, found desired file in the filename vector
+                2d) Set the firstblock[i] = fat[firstblock[i]] which will then ?????????????????
+    3) ELSE - WHILE LOOP (fat[b] != blocknumber) means that the first block of the file isn't the one 
+        we want to delete
+        3a) b = fat[b] which will set itself to the next linked block to the file 
+        - END LOOP - found desired block 
+        3b) fat[b] = fat[blocknumber] to set fat[b] equal to fat[blocknumber] so that the current block (the
+            block before the one being deleted) will store what the block being deleted is pointing to, so 
+            that the current block instead points to the block that the next one is pointing to, to jump
+            past the next block and look at the next-next block over
+    4) fat[blocknumber] = fat[0], making the current fat[blocknumber] equal to the index 0 of the fat so 
+        that the newly freed block looks at the first free block in the fat[0] [see next step why]
+    4a) Now set fat[0] = blocknumber, so now that fat[0] is now looking at the newly freed block and 
+        the newly freed block is looking at the previous first free block, so basically pushing on top 
+        of the stack of free blocks 
+        Explanation: Say we have free blocks = 5, 6, 7, 8
+                    and have file1 blocks = 10, 11, 12, 0 (where 0 is end of file)
+                    delblock(file1, 11)
+                    file1 10->11->12->0 (Where firstblock of file1 is index 9->10)
+                    free 5->6->7->8
+                    ------------
+                    file1 surpasses 11 (since 11 is being deleted)
+                    thus 10->12->0
+                    ------------
+                    now for free 11 will point to first free block which is 5
+                    11->5
+                    ------------
+                    and then the index 0 of free blocks (first free block) will point to 11 
+                    such that 11->5->6->7->8
+                    ------------
+                    Essentially making it so that they swap places to only move far less things in the free block 
+    5) return 1 for success 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::nextblock(string file, int blocknumber)
+    Goal: Return the value of the next block in a file
+
+    Steps:
+    1) Call fbcheck(file, blocknumber) to ensure that the inputted blocknumber is in the file to begin with 
+    1a) IF the check succeeds (block is in the file) then return the value stored in the fat[blocknumber] which 
+        is the number of the next block that the current block is pointing to
+    1b) ELSE the check failed so return -1, the inputted block number isn't even in the file 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::readblock(string file, int blocknumber, string& buffer)
+    Goal: Check if the desired block to be read is in the file to begin with, then call the getblock 
+        function in order to obtain the information in the block which returns the information into 
+        the buffer 
+
+    Steps: 
+    1) Check if the block is in the inputted file in the first place with fbcheck(file, blocknumber)
+    1a) IF fb returns true, call getblock(blocknumber, buffer) where that will put its output into the buffer 
+        which is a pointer to the address of buffer so that information does not need to be passed between 
+        functions and just kept at the address, thus return 1
+    1b) ELSE return 0 since the desired block is not in the file 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::writeblock(string file, int blocknumber, string buffer)
+    Goal: Check if the block is in the file in the first place, then call the putblock function in order 
+        to write the inputted buffer into the blocknumber 
+
+    1) Call the fbcheck(file, blocknumber) to check if the desired blocknumber is in the file 
+    1a) IF true then it is in the file, so call the putblock(blocknumber, buffer) which will write 
+        the inputted buffer into the desired blocknumber 
+    1b) ELSE return 0 since the desired block is not in the file 
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
 int Filesys::fsclose() *REVIEWED*
     Goal: Close the file system 
+
         1) Output "Error: fsclose called!"
         [Explanation: There shouldn't be any call to close the filesystem in this course
         so if the function is called then there is clearly something wrong and I should be
@@ -11,40 +296,165 @@ int Filesys::fsclose() *REVIEWED*
 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
 int Filesys::newfile(string file) *REVIEWED*
-    Goal: Create new empty file if it does not exist already 
+    Goal: Create new empty file if it does not exist already, newly created files will have firstblock = 0
+
     Returns:
        -1 if file already exists
         0 if no room for a new file 
         1 if successful
 
     Steps:
-        1) Check if the file already exists, by checking each entry in filename vector
-        and seeing if it is equal to the input file. IF it finds a match in the loop
-        then return -1 (file already exists)
-        - Exit loop; 
-        2) Check if the filename vector has XXXXXX in any entry to determine if there
-        is any space to put a new filename in the filename vector. IF loop found XXXXXX
-        set the current inex of the filename[i] that the loop is at equal to the inputted
-        file. THEN, in the firstblock[i] vector (parallel to filename vector)'s index equal
-        to 0. 
-        [Explanation: Setting the parallel index of firstblock[i] to zero will enable other
-        functions such as addblock to find the next available free block in the firstblock 
-        vector since the firstblock[0] is equal to the next free block that isn't associated
-        with a file; this allows it to immediately find the first free block that can be
-        associated with a file.]
-        2a) Synch the filesys with fssynch(), and output success
-        2b) return 1 (success)
-        - Exit loop;
-        3) Output "No space for new file"
-        3a) return 0 (no space)
+    1) Check if the file already exists, by checking each entry in filename vector
+    and seeing if it is equal to the input file. IF it finds a match in the loop
+    then return -1 (file already exists)
+    - Exit loop; 
+    2) Check if the filename vector has XXXXXX in any entry to determine if there
+    is any space to put a new filename in the filename vector. IF loop found XXXXXX
+    set the current inex of the filename[i] that the loop is at equal to the inputted
+    file. THEN, in the firstblock[i] vector (parallel to filename vector)'s index equal
+    to 0. 
+    [Explanation: Setting the parallel index of firstblock[i] to zero will enable other
+    functions such as addblock to find the next available free block in the firstblock 
+    vector since the firstblock[0] is equal to the next free block that isn't associated
+    with a file; this allows it to immediately find the first free block that can be
+    associated with a file.]
+    2a) Synch the filesys with fssynch(), and output success
+    2b) return 1 (success)
+    - Exit loop;
+    3) Output "No space for new file"
+    3a) return 0 (no space)
 
 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
-    Filesys::fbcheck(string file, int blocknumber)
-        Goal: Check if the first block is equal to something or not, and return boolean value
-        such that the calling functions will know what to do with the information.
+int Filesys::rmfile(string file) [CLASS METHOD] *REVIEWED & FIXED*
+    Goal: To remove a file as long as the contents of it are empty
 
-        Steps:
-            1) Initialize b equal to getfirstblock(file) so we can check what it equals
-            2) IF b <= 0 RETURN false (file is empty)
-            3
+    1) FOR LOOP (i=0; i<filename.size()) to go through each filename in vector to look for desired filename 
+        1a) IF (filename[i]==file) then we found the desired file to be removed 
+            1b) IF (firstblock[i]==0) firstblock is parallel vector to filename so look at its ith instance
+                and if its firstblock value is equal to zero then its firstblock is 0 thus the file is empty
+                1c) filename[i] == "XXXXXX" to designate free file 
+                1d) fssycnh() to update the root directory, and output success, return 1
+            1e) ELSE firstblock of file != 0 so that means it is not empty, thus return 0 for file not empty
+    2) OUT OF LOOP, thus could not file the file in the filename vector so return -1, output "File does not 
+        exist"
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::getfirstblock(string file) [CLASS METHOD]
+    Goal: To return the firstblock of a desired file 
+
+    Steps:
+    1) FOR LOOP (i=0; i<filename.size()) to go through each instance in filename vector 
+        1a) IF (filename[i]==file) then we found the desired file 
+            1b) return firstblock[i] since firstblock and filename are parallel vectors 
+    2) OUT OF LOOP: return -1 since we couldn't find the file 
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+Filesys::fbcheck(string file, int blocknumber) [CLASS METHOD] *REVIEWED*
+    Goal: To determine whether the desired block is in the inputted file
+        if the desired block is within the specified file then return true
+        otherwise return false 
+
+    Steps:
+    1) Initialize b equal to getfirstblock(file) so we can check what it equals
+    2) IF b == 0 RETURN false (file is empty)
+    3) WHILE LOOP (b != 0) to check if the desired block from caller is in the file 
+        in the first place
+        3a) IF b == blocknumber, return true since the callers desired blocknumber 
+            has indeed been found inside that file (So it belongs)
+        3b) Otherwise b = fat[b], to move onto the next block in the file (linked)
+    4) Since the loop did not find the desired block number in the file then return false 
+        because the caller wanted to find the block in that file
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::readfs() [PRIVATE METHOD] *QUESTION ON 5a*
+    Goal: To read the existing file system on the disk         
+
+    Steps:
+    1) Initialize buffer1 and buffer2 to be used in the reading process
+    1a) getblock(1, buffer1) to read the firstblock in the disk and put its contents into buffer1 
+    2) FOR LOOP (i=0;i<fatsize) to go through the fat 
+        2a) Initialize b 
+        2b) getblock(i+2, b) to read in each block of the FAT and put its contents into b 
+        2c) buffer2 += b to push all the information from the current block into buffer2 
+    OUT OF LOOP: buffer2 now has the contents of FAT 
+    3) initialize istringstream instream1 and instream2
+    3a) instream1.str(buffer1) 
+    3b) instream2.str(buffer2)
+    Explanation: Put the recieved information from the ROOT and FAT into their respective instreams to be 
+        extrapolated, the .str converts the input purely into string form so the process doesn't go haywire 
+    3c) filename.clear() and firstblock.clear() to clear the parallel vectors of filename and firstblock in 
+        just in case there is junk that somehow got into them that would potentially mess up the process 
+    4) FOR LOOP (i=0;i<rootsize) to go through each part of rootsize 
+        4a) initialize string f, and integer b 
+        4b) instream1 >> f >> b to read out respective filename and their following firstblock number 
+        Explanation: If you look at the disk of the filesystem you can see that the filename is first 
+            in the file and then it is followed by its respective first block, since we are reading in the 
+            filesystem we need to read it in, in that manner. Which is why its read in the segments f >> b 
+        4c) filename.push_back(f) to put the read in filename into the filename vector 
+        4d) firstblock.push_back(b) to put the read in firstblock into the firstblock vector 
+        Explanation: Since filename and firstblock are parallel vectors and are stored next to eachother in the 
+            ROOT, the manner in which we read it in and put them into their vectors respectively explains this 
+            process 
+    OUT OF LOOP: ROOT is read in and put into the filename and firstblock vectors respectively (Parallely)
+    5) FOR LOOP (i=0;i<getnumberofblocks()) to read in the rest of the data on the filesystem disk 
+        5a) Initialize integer k to be used as vehicle to put rest of file system on 
+        5b) instream2 >> k to get the rest of the info on disk that was put into instream2 
+        5c) fat.push_back(k) to put info into the fat 
+    OUT OF LOOP
+    6) Output "File system read in, return 1 for success
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::buildfs()
+    Goal: To build a file system since there was not one detected on the disk
+
+    Steps:
+    1) FOR LOOP (i=0;i<rootsize) to go the size of the root determined by the disk 
+        1a) filename.push_back("XXXXXX") to put empty file in the filename vector
+        1b) firstblock.push_back(0) to push firstblock 0 meaning empty file 
+    OUT OF LOOP: ROOT has been built 
+    2) fat.push_back(2+fatsize) to put the location of the first fat position after the ROOT in the fat vector 
+    2a) fat.push_back(-1) to put the first -1 for the FAT 
+    2b) FOR LOOP (i=0;i<fatsize) to populate FAT; notice the i=0 w/ no 2+
+        2c) fat.push_back(-1) to populate the FAT with -1 over fatsize 
+    OUT OF LOOP: first portion of FAT is populated 
+    3) FOR LOOP (i=2+fatsize; i<getnumberofblocks()) to put the position at the end of the FAT 
+        3a) fat.push_back(i+1) to populate the remaining FAT with ascending numbers corresponding to the FAT size 
+    OUT OF LOOP: FAT is populated 
+    4) fat.at(fatsize-1) = 0 so that the tail end of the FAT isn't pointing to something not within its space 
+    4a) Output "File system built", and return 1
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+int Filesys::fssynch()
+    Goal: To synchronise the filesytem to the vectors representing the file system
+
+    Steps: 
+    1) Initialize ostringstream outstream1, outsream2 to be used later 
+    2) FOR LOOP (i=0;i<firstblock.size()) to go through each index of the firstblock vector 
+        2a) outstream1 << filename[i] << " " << firstblock[i] << " "; to gather the values from the parallel 
+            vectors of filename and firstblock and put them into outstream1 with spacing between them all 
+    OUT OF LOOP: All filenames and their respective first blocks are stored into outstream1 
+    3) FOR LOOP (i=0;i<fat.size()) to go through all the contents of the FAT 
+        3a) outstream2 << fat[i] << " "; to gather each entry in the fat 
+    OUT OF LOOP: All contents of FAT have been put into outstream2 
+    4) Initialize string buffer1 = outstream1.str()
+    4a) Initialize string buffer2 = outstream2.str()
+    Explanation: Buffer1 and Buffer2 are equal to the contents of the vectors and formmated using the 
+        .str() function so that when writing to the disk there is nothing that will go wrong in the strings end 
+    5) Initialize two vectors blocks1 and blocks2 
+    5a) blocks1 = block(buffer1, getblocksize()) where the blocks will hold the blocked information of buffer1 
+    5b) blocks2 = block(buffer2, getblocksize()) where the blocks will hold the blocked info of buffer2 
+    6) Call putblock(1, blocks1[0]) to write the blocked contents of blocks1(buffer1) into the first block of the 
+        disk of the file system 
+    7) FOR LOOP (i=0;i<blocks2.size()) to put the remainder of the data the length of blocks2 
+        7a) putblock(fatsize+2+i, blocks2[i]) put the remaining data after the FAT of the blocked information in 
+            blocks2 
+    OUT OF LOOP: The remaining data stored in blocks2 has been written to the disk on the filesystem 
+    8) Output "File system synchronized" and return 1 for success 
+    

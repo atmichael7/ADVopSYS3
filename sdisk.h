@@ -23,8 +23,4 @@ class Sdisk{
     int blocksize;          // block size in bytes
 };
 
-vector<string> block(string buffer, int b);
-
-
-
 #endif 

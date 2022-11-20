@@ -15,12 +15,12 @@ Sdisk::Sdisk(string diskname, int numberofblocks, int blocksize){
     for (int i = 0; i < numberofblocks * blocksize; i++){
       outdisk.put('#');
     }
-    cout << "\nFile does not exist, created new file '" << diskname.c_str() << "'\n";
+    cout << "\nDisk does not exist, created new disk '" << diskname << "'\n";
   }
 
   else{
     char c;
-    int counter = 0;
+    int counter = 0;  // Should this be 0 or 1?
     infile.get(c);
     while (infile.good()){
       counter++;
@@ -42,20 +42,32 @@ int Sdisk::getblock(int blocknumber, string& buffer){
   buffer.clear();
   char c;
 
-  for (int i = 0; i < blocksize; i++){
+  for (int i = 0; i < blocksize; i++){  // Potentially i = 1??? Not likely though
     iofile.get(c);
     buffer.push_back(c);
   }
   return 1;
 }
 
-
-int Sdisk::putblock(int blocknumber, string buffer){
+int Sdisk::putblock(int blocknumber, string buffer){ 
   fstream iofile;
   iofile.open(diskname.c_str(), ios::in | ios::out);
   if (blocknumber < 0 || blocknumber >= numberofblocks){
-    cout << "Block does not exist";
+    cout << "Block out of range!";
     return 0;
+  }
+
+  // Ensure that the buffer is == blocksize, or something wonky might be going on
+  if (buffer.size() != blocksize){
+    if (buffer.size() > blocksize){
+      cout << "WARNING: Buffer is greater than blocksize\n";
+    }
+    else if (buffer.size() < blocksize){
+      cout << "WARNING: Buffer is less than blocksize\n";
+    }
+    else{
+      cout << "WARNING: Buffer size inconsistency\n";
+    }
   }
 
   iofile.seekp(blocksize * blocknumber);
@@ -66,45 +78,5 @@ int Sdisk::putblock(int blocknumber, string buffer){
   return 1;
 }
 
-
-int Sdisk::getnumberofblocks(){
-  return numberofblocks;
-}
-
-int Sdisk::getblocksize(){
-  return blocksize;
-}
-
-
-vector<string> block(string buffer, int b)
-{
-  // blocks the buffer into a list of blocks of size b
-
-  vector<string> blocks;
-  int numberofblocks=0;
-
-  if (buffer.length() % b == 0){ 
-    numberofblocks= buffer.length()/b;
-  }
-  else{ 
-    numberofblocks= buffer.length()/b +1;
-  }
-
-  string tempblock;
-
-  for (int i=0; i<numberofblocks; i++){ 
-    tempblock=buffer.substr(b*i,b);
-    blocks.push_back(tempblock);
-  }
-
-  int lastblock=blocks.size()-1;
-
-  for (int i=blocks[lastblock].length(); i<b; i++){ 
-    blocks[lastblock]+="#";
-  }
-
-  return blocks;
-}
-
-
-
+int Sdisk::getnumberofblocks(){ return numberofblocks; }
+int Sdisk::getblocksize(){ return blocksize; }
