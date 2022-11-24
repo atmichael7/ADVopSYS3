@@ -1,38 +1,45 @@
 #include "sdisk.cpp"
 #include "filesys.cpp"
+// #include "block.cpp"
 
 
 int main()
 {
-  cout << "A - ";
           // # of blocks , blocksize
   Sdisk disk1("disk1",256,128);
-  cout << "A1 - ";
   Filesys fsys("disk1",256,128);
-  cout << "B - ";
-  /*
+  
   fsys.newfile("file1");
-  cout << "C1 - ";
   fsys.newfile("file2");
-  cout << "C2 - ";
   string bfile1;
   string bfile2;
   for (int i=1; i<=1024; i++)
      {
        bfile1+="1";
      }
-  cout << "D - ";
 
   vector<string> blocks = block(bfile1,128);
+  // vector is filled with 8 blocks of size 128 1's
+  //cout << "BLOCKS.size()=" << blocks.size() << endl;
+  
+  //for (int i = 0; i <= blocks.size()-1; i++){
+  //  cout << "\ni=" << i << " - " << blocks[i]; 
+  //}
+  // if the loop doesnt have -1 after blocks.size() it will segment fault for reading out of range 
 
-  cout << "E - "; // segmentation fault after E
-
+  
   int blocknumber=0;
 
-  for (int i=0; i< blocks.size(); i++)
+  // add block to put info into block
+  for (int i=0; i<=blocks.size()-1; i++)
      {
-       blocknumber=fsys.addblock("file1",blocks[i]);
+        //cout << "\nYES - " << i;
+       blocknumber=fsys.addblock("file1",blocks[i]); // cant make it past i = 0
+       cout << "i=" << i << " | alloc: " << blocknumber << endl;
+       //cout << "YES - " << i;
      }
+
+  /*
 
   cout << "F - ";
 
@@ -51,7 +58,7 @@ int main()
 
   cout << "G1 - ";
 
-  for (int i=0; i< blocks.size(); i++)
+  for (int i=0; i< blocks.size()-1; i++)
      {
        blocknumber=fsys.addblock("file2",blocks[i]);
      }
@@ -63,5 +70,6 @@ int main()
   cout << "G3 - ";
 
   */
+  
 
 }

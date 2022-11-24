@@ -34,36 +34,51 @@ int Filesys::addblock(string file, string buffer){
 
   int blockid = getfirstblock(file);  // blockid is set to the first block of the desired file to add the block to 
 
-  if (blockid == -1){ // if the block id == -1 then it doesn't have 
+  if (blockid == -1){ // the file is in the FAT, does not exist
     cout << "File does not exist!\n";
     return 0;
   }
-
-  if (blockid == 0){
+  
+  if (blockid == 0){ // the file is empty 
     // update the root
-    for (int i = 0; i < filename.size(); i++){
-      if (filename[i] == file){
-        firstblock[i] = allocate;
-        fssynch();  // IS THIS RIGHT? possibly not since followed by return -1
+    for (int i = 0; i < filename.size(); i++){ // look for the file in the root 
+      if (filename[i] == file){ // current index of filename array == desired file
+        firstblock[i] = allocate; // set parallel vector to the firstblock = the first free block in allocate
+        //fssynch();  // IS THIS RIGHT? possibly not since followed by return -1
+        cout << "\n Code1\n";
         break;
       }
     }
   }
 
-  else{
-    // update fat... find the end of file
-    while (fat[blockid] != 0){
-      blockid = fat[blockid];
+  // segment faults in this else statement 
+  else{ // file is not empty, so need to find the last block of the file, to add on another
+  // update fat... find the end of file
+  // blockid originally held the first block of the file
+    cout << "\nCode2\n";
+    while (fat[blockid] != 0){ // while not at the end of the linked FAT
+      blockid = fat[blockid]; // set current blockid to the next value of the FAT (Current index of FAT contains info of next FAT pos.)
     }
-    // fat[blockid] = 0;
-    fat[blockid] = allocate;
-    fat[0] = fat[fat[0]];
-    fat[allocate] = 0;
-    putblock(allocate, buffer);
-    fssynch();
-    return allocate;
+    // now at the end of the desired file
+    
+    //fat[blockid] = 0; // set fat[atblockid] = 0
+    fat[blockid] = allocate; // set the end of file block to point at the next free block
   }
-  return -1;
+
+  fat[0] = fat[fat[0]]; // set the zeroth index of FAT to be the next available block
+  fat[allocate] = 0; // where allocate is set to the first free block
+
+  putblock(allocate, buffer); // put the buffer into the new block 
+  //fssynch(); // fssynch
+  //return allocate; // return the block that was allocated
+  
+  
+  // ^^ set the first free block to 0 since it has been allocated to the desired file 
+  fssynch();
+
+
+  cout << "\nreturning1\n";
+  return allocate; // removed -1 and switched to 1
 }
 
 //##############################################################################
