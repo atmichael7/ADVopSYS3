@@ -69,6 +69,7 @@ int Filesys::addblock(string file, string buffer){
   fat[allocate] = 0; // where allocate is set to the first free block
 
   putblock(allocate, buffer); // put the buffer into the new block 
+  cout << "\n putblock(" << allocate << ", " << buffer << ")";
   //fssynch(); // fssynch
   //return allocate; // return the block that was allocated
   
