@@ -35,11 +35,11 @@ int main()
      {
         //cout << "\nYES - " << i;
        blocknumber=fsys.addblock("file1",blocks[i]); // cant make it past i = 0
-       cout << "i=" << i << " | alloc: " << blocknumber << endl;
+       //cout << "i=" << i << " | alloc: " << blocknumber << endl;
        //cout << "YES - " << i;
      }
 
-  /*
+  
 
   cout << "F - ";
 
@@ -69,7 +69,7 @@ int main()
 
   cout << "G3 - ";
 
-  */
+
   
 
 }

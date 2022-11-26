@@ -68,6 +68,7 @@ int Sdisk::putblock(int blocknumber, string buffer){
     else{
       cout << "WARNING: Buffer size inconsistency\n";
     }
+    cout << "\nWARNING: UNKNOWN ERROR RAISED IN BUFFER SIZE\n";
   }
 
   iofile.seekp(blocksize * blocknumber);

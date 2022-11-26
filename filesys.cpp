@@ -314,7 +314,7 @@ int Filesys::buildfs(){
   }
 
   // so the tailend isnt pointing to something that doesnt exist in the space
-  fat.at(fatsize+1) = 0; // CHANGED FROM -1 TO +1 (FAT FIX)
+  fat.at(fat.size()-1) = 0; // CHANGED FROM -1 TO +1 (FAT FIX)
 
   cout << "File system built.\n";
   return 1; // success
@@ -342,10 +342,10 @@ int Filesys::fssynch(){
   vector <string> blocks1 = block(buffer1, getblocksize());
   vector <string> blocks2 = block(buffer2, getblocksize());
 
-  putblock(0, blocks1[0]); // putting root into the index 1
+  putblock(1, blocks1[0]); // putting root into the index 1
 
   for (int i = 0; i < blocks2.size(); i++){
-    putblock(fatsize + 1 + i, blocks2[i]); // changed to + 1 instead of 2 (FAT FIX)
+    putblock(2 + i, blocks2[i]); // got rid of fatsize + in
   }
   cout << "File system synchronized.\n";
   return 1;
