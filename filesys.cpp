@@ -55,7 +55,6 @@ int Filesys::addblock(string file, string buffer){
   else{ // file is not empty, so need to find the last block of the file, to add on another
   // update fat... find the end of file
   // blockid originally held the first block of the file
-    cout << "\nCode2\n";
     while (fat[blockid] != 0){ // while not at the end of the linked FAT
       blockid = fat[blockid]; // set current blockid to the next value of the FAT (Current index of FAT contains info of next FAT pos.)
     }
@@ -67,18 +66,11 @@ int Filesys::addblock(string file, string buffer){
 
   fat[0] = fat[fat[0]]; // set the zeroth index of FAT to be the next available block
   fat[allocate] = 0; // where allocate is set to the first free block
-
+  // ^^ set the first free block to 0 since it has been allocated to the desired file
   putblock(allocate, buffer); // put the buffer into the new block 
-  cout << "\n putblock(" << allocate << ", " << buffer << ")";
-  //fssynch(); // fssynch
-  //return allocate; // return the block that was allocated
-  
-  
-  // ^^ set the first free block to 0 since it has been allocated to the desired file 
+ 
   fssynch();
 
-
-  cout << "\nreturning1\n";
   return allocate; // removed -1 and switched to 1
 }
 
@@ -91,7 +83,7 @@ int Filesys::delblock(string file, int blocknumber){
 
   int b = getfirstblock(file);
   if (b == blocknumber){
-    for (int i = 0; i <= filename.size(); i++){
+    for (int i = 0; i < filename.size(); i++){
       if (filename[i] == file){
         firstblock[i] = fat[firstblock[i]];
         break;
@@ -106,6 +98,7 @@ int Filesys::delblock(string file, int blocknumber){
   }
   fat[blocknumber] = fat[0];
   fat[0] = blocknumber;
+  fssynch();// just added
   return 1; // JUST ADDED
 }
 
@@ -349,4 +342,22 @@ int Filesys::fssynch(){
   }
   cout << "File system synchronized.\n";
   return 1;
+}
+
+
+
+
+
+
+// 00000000000000000000000000000000000000000000000000000000
+
+vector<string> Filesys::ls(){
+    vector<string> flist; 
+    
+    for (int i = 0; i < filename.size(); i++){
+        if (filename[i] != "XXXXXX"){
+            flist.push_back(filename[i]);
+        }
+    }
+    return flist; 
 }

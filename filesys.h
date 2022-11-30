@@ -26,6 +26,8 @@ class Filesys:public Sdisk
     int nextblock(string file, int blocknumber);
     bool fbcheck(string file, int blocknumber);
 
+    vector<string> ls();
+
   private:
     int rootsize;           // maximum number of entries in ROOT
     int fatsize;            // number of blocks occupied by FAT

@@ -1,17 +1,18 @@
 output: main.o block.o sdisk.o filesys.o
 	g++ main.o block.o sdisk.o filesys.o -o output
+	
 
-main.o: main.cpp
-	g++ -c main.cpp
+filesys.o:
+	g++ -c filesys.cpp
+
+sdisk.o:
+	g++ -c sdisk.cpp
 
 block.o:
 	g++ -c block.cpp
 
-sdisk.o:
-	g++ -c sdisk.cpp
-	
-filesys.o:
-	g++ -c filesys.cpp
+main.o: main.cpp
+	g++ -c main.cpp
 
 clean:
 	rm *.o
