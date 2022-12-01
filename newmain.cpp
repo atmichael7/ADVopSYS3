@@ -70,13 +70,6 @@ while (command != "quit")
             //shell.search(op1);
             table.search(op1);
            }
-
-        if (command=="build")
-          {
-            // The variable op1 is the source file and the variable op2 is the destination file.
-            table.build_table("data.txt");
-           }
-
       }
 
     return 0;

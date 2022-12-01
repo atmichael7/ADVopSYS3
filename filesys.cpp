@@ -217,12 +217,9 @@ int Filesys::rmfile(string file){
         // thus any other function curious can use this as a condition checker when deleting the blocks to ensure that it wont leave any open blocks 
         return 0;
       }
-      // file does not exist
-      cout << "File does not exist.\n";
-      return -1;
     }
-    cout << "Error (rmfile)\n";
-    return 0; // JUST ADDED
+    cout << "File does not exist.\n"; // file does not exist
+    return -1;
 }
 
 //##############################################################################
