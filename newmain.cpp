@@ -2,10 +2,10 @@
 #include <string>
 #include <stdio.h>
 //#include "block.cpp"
-#include "sdisk.cpp"
-#include "filesys.cpp"
-#include "shell.cpp"
-#include "table.cpp"
+#include "sdisk.h"
+#include "filesys.h"
+#include "shell.h"
+#include "table.h"
 
 using namespace std;
 

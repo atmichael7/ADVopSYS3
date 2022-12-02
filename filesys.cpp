@@ -1,5 +1,5 @@
 #include "filesys.h"
-#include "block.cpp"
+#include "block.h"
 // newfile
 
 Filesys::Filesys(string diskname, int numberofblocks, int blocksize):Sdisk(diskname, numberofblocks, blocksize){
